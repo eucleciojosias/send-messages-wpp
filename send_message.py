@@ -75,17 +75,25 @@ driver = webdriver.Chrome(options=chrome_options)
 with open(phone_numbers_file, mode='r') as csv_file:
     csv_reader = csv.DictReader(csv_file)
     for row in csv_reader:
-        log_file.write('\n=====================')
-        log_file.write('\nSending to {}'.format(row['number']))
+        log_file.write('\n------------------------------')
+        log_file.write('\n{} - sending'.format(row['number']))
 
         try:
             load_number_with_message(row['number'], text_msg)
+            log_file.write('\n{} - loaded'.format(row['number']))
+
             send_message()
+            log_file.write('\n{} - message sent'.format(row['number']))
+
             for filename in attachments_files:
-                send_media('{}/{}'.format(attachments_dir, filename))
+                media_path = '{}/{}'.format(attachments_dir, filename)
+                send_media(media_path)
+                log_file.write('\n{} - attachment {} sent'.format(row['number'], media_path))
+
         except Exception as e:
             print(e)
             log_file.write('\n{} - failed'.format(row['number']))
+
             continue
 
         log_file.write('\n{} - succeeded'.format(row['number']))
