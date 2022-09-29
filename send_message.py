@@ -6,6 +6,8 @@
 
 
 import os
+import csv
+import sys
 from selenium import webdriver
 import urllib
 from selenium.webdriver.common.by import By
@@ -14,9 +16,11 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 import time
 
+
 def element_presence(by, xpath, time):
     element_present = EC.presence_of_element_located((By.XPATH, xpath))
     WebDriverWait(driver, time).until(element_present)
+
 
 def send_message():
     element_presence(By.XPATH, '//*[@id="main"]/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div[1]', 40)
@@ -24,31 +28,42 @@ def send_message():
     msg_box.send_keys('\n')
     time.sleep(3)
 
-def send_image():
+
+def send_media(media_filename):
     driver.find_element(By.CSS_SELECTOR, "span[data-icon='clip']").click()
-    driver.find_element(By.CSS_SELECTOR, "input[type='file']").send_keys(os.getcwd()+"/video.mp4")
-    time.sleep(2)
+    driver.find_element(By.CSS_SELECTOR, "input[type='file']").send_keys("{}/{}".format(os.getcwd(), media_filename))
+    time.sleep(1)
     driver.find_element(By.CSS_SELECTOR, "span[data-icon='send']").click()
     time.sleep(2)
 
-def prepare_msg(contact_list):
-    base_msg = """
-Vote 0000
-"""
+
+def load_number_with_message(phone_number, base_msg):
     base_url = 'https://web.whatsapp.com/send?phone={}&text={}'
-    for contact in contact_list:
-        msg = urllib.parse.quote(base_msg)
-        url_msg = base_url.format(contact, msg)
-        try:
-            driver.get(url_msg)
-            time.sleep(2)
-            send_message()
-            send_image()
-            driver.execute_script("window.onbeforeunload = function() {};")
-        except:
-            continue
+    msg = urllib.parse.quote(base_msg)
+    wpp_web_url = base_url.format(phone_number, msg)
+
+    driver.execute_script("window.onbeforeunload = function() {};")
+    driver.get(wpp_web_url)
+    time.sleep(2)
 
 
+## INPUTS
+phone_numbers_file = sys.argv[1]
+
+text_msg_file = open(sys.argv[2], 'r')
+text_msg = text_msg_file.read()
+text_msg_file.close()
+
+attachments_dir = sys.argv[3]
+attachments_files = [f for f in os.listdir(attachments_dir) if os.path.isfile(os.path.join(attachments_dir, f))]
+
+
+##### LOG
+log_prefix = time.strftime("%Y-%m-%d_%H-%M-%S", time.gmtime())
+log_file = open('logs/{}.log'.format(log_prefix), 'w')
+
+
+##### INIT BROWSER
 chrome_options = Options()
 chrome_options.add_argument("--user-data-dir-Session")
 chrome_options.add_argument("--profile-directory=Default")
@@ -56,15 +71,25 @@ chrome_options.add_argument('--disable-gpu')
 
 driver = webdriver.Chrome(options=chrome_options)
 
-contact_list = [
-    # '+5524999017267',
-    # '+5524999639009',
-    '+5521972978654',
-    # '+5524981368359',
-    '+5524999436241',
-    # '+5524999036403',
-    # '+5521967047697'
-]
+##### SEND
+with open(phone_numbers_file, mode='r') as csv_file:
+    csv_reader = csv.DictReader(csv_file)
+    for row in csv_reader:
+        log_file.write('\n=====================')
+        log_file.write('\nSending to {}'.format(row['number']))
 
-prepare_msg(contact_list)
+        try:
+            load_number_with_message(row['number'], text_msg)
+            send_message()
+            for filename in attachments_files:
+                send_media('{}/{}'.format(attachments_dir, filename))
+        except Exception as e:
+            print(e)
+            log_file.write('\n{} - failed'.format(row['number']))
+            continue
+
+        log_file.write('\n{} - succeeded'.format(row['number']))
+
+
+log_file.close()
 driver.quit()
