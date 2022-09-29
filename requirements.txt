@@ -1,0 +1,2 @@
+selenium==4.4.3
+urllib==1.26.12
