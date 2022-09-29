@@ -88,7 +88,7 @@ with open(phone_numbers_file, mode='r') as csv_file:
             for filename in attachments_files:
                 media_path = '{}/{}'.format(attachments_dir, filename)
                 send_media(media_path)
-                log_file.write('\n{} - attachment {} sent'.format(row['number'], media_path))
+                log_file.write('\n{} - {} - attachment sent'.format(row['number'], media_path))
 
         except Exception as e:
             print(e)
