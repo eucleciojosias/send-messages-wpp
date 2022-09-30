@@ -45,7 +45,7 @@ def load_number_with_message(phone_number, base_msg):
 
     driver.execute_script("window.onbeforeunload = function() {};")
     driver.get(wpp_web_url)
-    time.sleep(2)
+    time.sleep(5)
 
 
 ## INPUTS
@@ -66,6 +66,7 @@ log_file = open('logs/{}.log'.format(log_prefix), 'w')
 
 ##### INIT BROWSER
 chrome_options = Options()
+chrome_options.binary_location = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 chrome_options.add_argument("--user-data-dir-Session")
 chrome_options.add_argument("--profile-directory=Default")
 chrome_options.add_argument('--disable-gpu')
