@@ -15,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 import time
+from webdriver_manager.chrome import ChromeDriverManager
 
 
 def element_presence(by, xpath, time):
@@ -69,7 +70,7 @@ chrome_options.add_argument("--user-data-dir-Session")
 chrome_options.add_argument("--profile-directory=Default")
 chrome_options.add_argument('--disable-gpu')
 
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
 ##### SEND
 with open(phone_numbers_file, mode='r') as csv_file:
