@@ -74,7 +74,7 @@ chrome_options.add_argument('--disable-gpu')
 driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
 ##### SEND
-with open(phone_numbers_file, mode='r') as csv_file:
+with open(phone_numbers_file, mode='r', encoding='utf-8') as csv_file:
     csv_reader = csv.DictReader(csv_file)
     for row in csv_reader:
         log_file.write('\n------------------------------')
